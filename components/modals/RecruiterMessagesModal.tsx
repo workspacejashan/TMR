@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Conversation, Message, MessageAuthor } from '../../types';
-import { SendIcon, LockClosedIcon } from '../icons/Icons';
-import { CloseIcon } from '../icons/Icons';
+import { SendIcon, LockClosedIcon, CloseIcon, ArrowLeftIcon } from '../icons/Icons';
 
 interface RecruiterMessagesModalProps {
   isOpen: boolean;
@@ -10,7 +9,6 @@ interface RecruiterMessagesModalProps {
   onSendMessage: (candidateId: string, text: string) => void;
 }
 
-// A simplified ChatMessage component for this modal
 const ConversationMessage: React.FC<{ message: Message }> = ({ message }) => {
   const isRecruiter = message.author === MessageAuthor.BOT;
   const messageClass = isRecruiter
@@ -29,7 +27,7 @@ const ConversationMessage: React.FC<{ message: Message }> = ({ message }) => {
 };
 
 const RecruiterMessagesModal: React.FC<RecruiterMessagesModalProps> = ({ isOpen, onClose, conversations, onSendMessage }) => {
-  const [selectedConvoId, setSelectedConvoId] = useState<string | null>(conversations[0]?.candidateId ?? null);
+  const [selectedConvoId, setSelectedConvoId] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -40,33 +38,30 @@ const RecruiterMessagesModal: React.FC<RecruiterMessagesModalProps> = ({ isOpen,
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [selectedConvo?.messages]);
+  
+  useEffect(() => {
+    if (!isOpen) {
+        setSelectedConvoId(null);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       setIsAnimatingOut(false);
+      if (selectedConvo?.status === 'accepted') {
+          inputRef.current?.focus();
+      }
     } else {
-      // When closing, trigger the exit animation and set a timer to fully remove the modal from the DOM.
       setIsAnimatingOut(true);
       const timer = setTimeout(() => {
         setIsAnimatingOut(false);
         document.body.style.overflow = '';
-      }, 350); // This duration must match the 'modal-exit' animation duration.
+      }, 350);
       return () => clearTimeout(timer);
     }
-
-    // Cleanup function to ensure body scrolling is restored if the component unmounts unexpectedly.
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-  
-  useEffect(() => {
-    if (isOpen && selectedConvo?.status === 'accepted') {
-        inputRef.current?.focus();
-    }
+    return () => { document.body.style.overflow = ''; };
   }, [isOpen, selectedConvo]);
-
 
   const handleSend = () => {
       if (input.trim() && selectedConvoId && selectedConvo?.status === 'accepted') {
@@ -79,8 +74,8 @@ const RecruiterMessagesModal: React.FC<RecruiterMessagesModalProps> = ({ isOpen,
   if (!isOpen && !isAnimatingOut) return null;
 
   return (
-    <div className={`fixed inset-0 z-50 bg-black/50 backdrop-blur-sm p-4 flex justify-center items-center ${isOpen ? 'modal-enter' : 'modal-exit'}`}>
-      <div className={`w-full max-w-4xl h-[80vh] bg-surface dark:bg-dark-surface rounded-2xl shadow-2xl flex flex-col overflow-hidden ${isOpen ? 'modal-content-enter' : 'modal-content-exit'}`}>
+    <div className={`fixed inset-0 z-50 bg-black/50 backdrop-blur-sm p-0 md:p-4 flex justify-center items-center ${isOpen ? 'modal-enter' : 'modal-exit'}`}>
+      <div className={`w-full h-full md:max-w-4xl md:h-[80vh] bg-surface dark:bg-dark-surface md:rounded-2xl shadow-2xl flex flex-col overflow-hidden ${isOpen ? 'full-modal-content-enter' : 'full-modal-content-exit'}`}>
         <header className="p-4 flex justify-between items-center border-b border-border dark:border-dark-border flex-shrink-0">
           <h2 className="text-xl font-semibold text-text-primary dark:text-dark-text-primary">Messages</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
@@ -88,9 +83,9 @@ const RecruiterMessagesModal: React.FC<RecruiterMessagesModalProps> = ({ isOpen,
           </button>
         </header>
 
-        <div className="flex-grow flex min-h-0">
+        <div className="flex-grow flex min-h-0 relative overflow-hidden">
           {/* Conversation List */}
-          <aside className="w-1/3 border-r border-border dark:border-dark-border overflow-y-auto">
+          <aside className={`w-full md:w-1/3 flex-shrink-0 border-r border-border dark:border-dark-border overflow-y-auto transition-transform duration-300 ease-in-out ${selectedConvoId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}>
             {conversations.map(convo => (
               <div
                 key={convo.candidateId}
@@ -107,14 +102,22 @@ const RecruiterMessagesModal: React.FC<RecruiterMessagesModalProps> = ({ isOpen,
           </aside>
 
           {/* Chat Window */}
-          <main className="w-2/3 flex flex-col bg-slate-50 dark:bg-dark-background/50">
+          <main className={`absolute inset-0 md:static w-full md:w-2/3 flex flex-col bg-slate-50 dark:bg-dark-background/50 transition-transform duration-300 ease-in-out ${selectedConvoId ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
             {selectedConvo ? (
               <>
+                <div className="p-3 border-b border-border dark:border-dark-border flex-shrink-0 flex items-center gap-3 bg-surface dark:bg-dark-surface">
+                  <button onClick={() => setSelectedConvoId(null)} className="md:hidden p-2 rounded-full hover:bg-slate-100 dark:hover:bg-dark-border text-text-secondary">
+                    <ArrowLeftIcon className="w-5 h-5" />
+                  </button>
+                  <img src={selectedConvo.candidateProfilePhoto || ''} alt={selectedConvo.candidateName} className="w-8 h-8 rounded-full object-cover"/>
+                  <h3 className="font-semibold text-text-primary dark:text-dark-text-primary">{selectedConvo.candidateName}</h3>
+                </div>
+
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     {selectedConvo.messages.map(msg => <ConversationMessage key={msg.id} message={msg} />)}
                     <div ref={messagesEndRef} />
                 </div>
-                <div className="p-3 border-t border-border dark:border-dark-border">
+                <div className="p-3 border-t border-border dark:border-dark-border bg-surface dark:bg-dark-surface">
                   {selectedConvo.status === 'accepted' ? (
                     <div className="relative">
                         <input ref={inputRef} type="text" value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleSend()} placeholder="Type a message..." className="w-full bg-background dark:bg-dark-surface border-border dark:border-dark-border rounded-full py-2.5 pl-4 pr-12 text-sm focus:ring-primary focus:border-primary" />
@@ -131,7 +134,7 @@ const RecruiterMessagesModal: React.FC<RecruiterMessagesModalProps> = ({ isOpen,
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center">
+              <div className="hidden flex-1 md:flex items-center justify-center">
                 <p className="text-text-secondary dark:text-dark-text-secondary">Select a conversation to start chatting.</p>
               </div>
             )}

@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Conversation, Message, MessageAuthor } from '../../types';
-import { SendIcon, BotIcon } from '../icons/Icons';
-import { CloseIcon } from '../icons/Icons';
+import { SendIcon, BotIcon, CloseIcon, ArrowLeftIcon } from '../icons/Icons';
 
 interface CandidateMessagesModalProps {
   isOpen: boolean;
@@ -10,7 +9,6 @@ interface CandidateMessagesModalProps {
   onSendMessage: (conversationId: string, text: string) => void;
 }
 
-// A simplified ChatMessage component for this modal
 const ConversationMessage: React.FC<{ message: Message }> = ({ message }) => {
   const isCandidate = message.author === MessageAuthor.USER;
   const messageClass = isCandidate
@@ -29,7 +27,7 @@ const ConversationMessage: React.FC<{ message: Message }> = ({ message }) => {
 };
 
 const CandidateMessagesModal: React.FC<CandidateMessagesModalProps> = ({ isOpen, onClose, conversations, onSendMessage }) => {
-  const [selectedConvoId, setSelectedConvoId] = useState<string | null>(conversations[0]?.candidateId ?? null);
+  const [selectedConvoId, setSelectedConvoId] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -40,31 +38,29 @@ const CandidateMessagesModal: React.FC<CandidateMessagesModalProps> = ({ isOpen,
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [selectedConvo?.messages]);
+  
+  useEffect(() => {
+    if (!isOpen) {
+        setSelectedConvoId(null);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
         document.body.style.overflow = 'hidden';
         setIsAnimatingOut(false);
+        if (selectedConvoId) {
+          inputRef.current?.focus();
+        }
     } else {
-        // When closing, trigger the exit animation and set a timer to fully remove the modal from the DOM.
         setIsAnimatingOut(true);
         const timer = setTimeout(() => {
             setIsAnimatingOut(false);
             document.body.style.overflow = '';
-        }, 350); // This duration must match the 'modal-exit' animation duration.
+        }, 350);
         return () => clearTimeout(timer);
     }
-
-    // Cleanup function to ensure body scrolling is restored if the component unmounts unexpectedly.
-    return () => {
-        document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-  
-  useEffect(() => {
-    if (isOpen) {
-        inputRef.current?.focus();
-    }
+    return () => { document.body.style.overflow = ''; };
   }, [isOpen, selectedConvoId]);
 
   const handleSend = () => {
@@ -78,8 +74,8 @@ const CandidateMessagesModal: React.FC<CandidateMessagesModalProps> = ({ isOpen,
   if (!isOpen && !isAnimatingOut) return null;
 
   return (
-    <div className={`fixed inset-0 z-50 bg-black/50 backdrop-blur-sm p-4 flex justify-center items-center ${isOpen ? 'modal-enter' : 'modal-exit'}`}>
-      <div className={`w-full max-w-4xl h-[80vh] bg-surface dark:bg-dark-surface rounded-2xl shadow-2xl flex flex-col overflow-hidden ${isOpen ? 'modal-content-enter' : 'modal-content-exit'}`}>
+    <div className={`fixed inset-0 z-50 bg-black/50 backdrop-blur-sm p-0 md:p-4 flex justify-center items-center ${isOpen ? 'modal-enter' : 'modal-exit'}`}>
+      <div className={`w-full h-full md:max-w-4xl md:h-[80vh] bg-surface dark:bg-dark-surface md:rounded-2xl shadow-2xl flex flex-col overflow-hidden ${isOpen ? 'full-modal-content-enter' : 'full-modal-content-exit'}`}>
         <header className="p-4 flex justify-between items-center border-b border-border dark:border-dark-border flex-shrink-0">
           <h2 className="text-xl font-semibold text-text-primary dark:text-dark-text-primary">Your Messages</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
@@ -87,9 +83,9 @@ const CandidateMessagesModal: React.FC<CandidateMessagesModalProps> = ({ isOpen,
           </button>
         </header>
 
-        <div className="flex-grow flex min-h-0">
+        <div className="flex-grow flex min-h-0 relative overflow-hidden">
           {/* Conversation List */}
-          <aside className="w-1/3 border-r border-border dark:border-dark-border overflow-y-auto">
+          <aside className={`w-full md:w-1/3 flex-shrink-0 border-r border-border dark:border-dark-border overflow-y-auto transition-transform duration-300 ease-in-out ${selectedConvoId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}>
             {conversations.map(convo => (
               <div
                 key={convo.candidateId}
@@ -100,8 +96,7 @@ const CandidateMessagesModal: React.FC<CandidateMessagesModalProps> = ({ isOpen,
                     <BotIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  {/* For candidate view, candidateName is the Recruiter's name */}
-                  <p className="font-semibold text-sm text-text-primary dark:text-dark-text-primary truncate">{convo.candidateName}</p> 
+                  <p className="font-semibold text-sm text-text-primary dark:text-dark-text-primary truncate">Recruiter</p> 
                   <p className="text-xs text-text-secondary dark:text-dark-text-secondary truncate">{convo.messages.slice(-1)[0]?.text}</p>
                 </div>
               </div>
@@ -109,14 +104,23 @@ const CandidateMessagesModal: React.FC<CandidateMessagesModalProps> = ({ isOpen,
           </aside>
 
           {/* Chat Window */}
-          <main className="w-2/3 flex flex-col bg-slate-50 dark:bg-dark-background/50">
+          <main className={`absolute inset-0 md:static w-full md:w-2/3 flex flex-col bg-slate-50 dark:bg-dark-background/50 transition-transform duration-300 ease-in-out ${selectedConvoId ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
             {selectedConvo ? (
               <>
+                 <div className="p-3 border-b border-border dark:border-dark-border flex-shrink-0 flex items-center gap-3 bg-surface dark:bg-dark-surface">
+                  <button onClick={() => setSelectedConvoId(null)} className="md:hidden p-2 rounded-full hover:bg-slate-100 dark:hover:bg-dark-border text-text-secondary">
+                    <ArrowLeftIcon className="w-5 h-5" />
+                  </button>
+                   <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
+                      <BotIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  </div>
+                  <h3 className="font-semibold text-text-primary dark:text-dark-text-primary">Recruiter</h3>
+                </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     {selectedConvo.messages.map(msg => <ConversationMessage key={msg.id} message={msg} />)}
                     <div ref={messagesEndRef} />
                 </div>
-                <div className="p-3 border-t border-border dark:border-dark-border">
+                <div className="p-3 border-t border-border dark:border-dark-border bg-surface dark:bg-dark-surface">
                     <div className="relative">
                         <input ref={inputRef} type="text" value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleSend()} placeholder="Type a message..." className="w-full bg-background dark:bg-dark-surface border-border dark:border-dark-border rounded-full py-2.5 pl-4 pr-12 text-sm focus:ring-primary focus:border-primary" />
                         <button onClick={handleSend} className="absolute right-1 top-1/2 -translate-y-1/2 bg-primary-gradient text-white rounded-full p-2 disabled:bg-slate-400 transition-all transform hover:scale-105 shadow-md">
@@ -126,7 +130,7 @@ const CandidateMessagesModal: React.FC<CandidateMessagesModalProps> = ({ isOpen,
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center">
+              <div className="hidden flex-1 md:flex items-center justify-center">
                 <p className="text-text-secondary dark:text-dark-text-secondary">Select a conversation to start chatting.</p>
               </div>
             )}

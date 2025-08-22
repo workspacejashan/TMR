@@ -10,7 +10,6 @@ import RecruiterRequestsModal from './components/modals/RecruiterRequestsModal';
 import SuggestedJobsModal from './components/modals/SuggestedJobsModal';
 import PublicProfileModal from './components/modals/PublicProfileModal';
 import RecruiterDashboard from './components/RecruiterDashboard';
-import FoundCandidatesModal from './components/modals/FoundCandidatesModal';
 import RecruiterMessagesModal from './components/modals/RecruiterMessagesModal';
 import ConnectRequestModal from './components/modals/ConnectRequestModal';
 import CandidateMessagesModal from './components/modals/CandidateMessagesModal';
@@ -222,13 +221,6 @@ function App() {
           openModal={openModal}
           isRecruiterView={userType === UserType.RECRUITER}
           openConnectModal={openConnectModal}
-        />
-
-        <FoundCandidatesModal
-            isOpen={activeModal === ModalType.FOUND_CANDIDATES}
-            onClose={closeModal}
-            candidates={foundCandidates}
-            onViewProfile={viewCandidateProfile}
         />
 
         <RecruiterMessagesModal
