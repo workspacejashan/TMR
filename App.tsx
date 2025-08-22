@@ -155,7 +155,7 @@ function App() {
           font-family: 'Inter', sans-serif;
         }
       `}</style>
-      <div className="h-screen w-screen">
+      <div className="h-[100dvh] w-screen">
         {renderContent()}
         
         <AuthModal
