@@ -34,7 +34,7 @@ const BottomNavItem: React.FC<{label: string; icon: React.ReactNode; isActive: b
         <button
             onClick={onClick}
             className={`flex flex-col items-center justify-center w-24 h-14 rounded-lg transition-colors relative ${isActive ? 'text-primary' : 'text-text-secondary dark:text-dark-text-secondary hover:bg-slate-100 dark:hover:bg-dark-border'}`}
-            aria-current={isActive}
+            aria-current={isActive ? 'page' : undefined}
         >
             {badgeCount > 0 && (
                 <span className="absolute top-1 right-5 w-5 h-5 bg-secondary text-white text-xs font-bold rounded-full flex items-center justify-center ring-2 ring-surface dark:ring-dark-surface">

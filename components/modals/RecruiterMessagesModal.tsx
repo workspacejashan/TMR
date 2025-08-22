@@ -85,7 +85,7 @@ const RecruiterMessagesModal: React.FC<RecruiterMessagesModalProps> = ({ isOpen,
 
         <div className="flex-grow flex min-h-0 relative overflow-hidden">
           {/* Conversation List */}
-          <aside className={`w-full md:w-1/3 flex-shrink-0 border-r border-border dark:border-dark-border overflow-y-auto transition-transform duration-300 ease-in-out ${selectedConvoId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}>
+          <aside className={`w-full md:w-1/3 flex-shrink-0 border-r border-border dark:border-dark-border overflow-y-auto transition-transform duration-300 ease-in-out absolute inset-0 md:static ${selectedConvoId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}>
             {conversations.map(convo => (
               <div
                 key={convo.candidateId}

@@ -109,7 +109,7 @@ function App() {
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
         @keyframes modal-content-out {
-            from { opacity: 1; transform: scale(1) translateY(0); }
+            from { opacity: 1; transform: scale(1); }
             to { opacity: 0; transform: scale(0.92) translateY(10px); }
         }
 
