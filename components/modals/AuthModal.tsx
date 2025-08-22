@@ -47,7 +47,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onLogin, onSignUp }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleNoOp} title={getTitle()}>
+    <Modal isOpen={isOpen} onClose={handleNoOp} title={getTitle()} showCloseButton={false}>
         <div className="relative">
             {view !== 'initial' && (
                 <button 

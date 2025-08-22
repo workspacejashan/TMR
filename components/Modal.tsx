@@ -7,9 +7,10 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   maxWidth?: 'max-w-md' | 'max-w-lg' | 'max-w-xl' | 'max-w-2xl' | 'max-w-4xl';
+  showCloseButton?: boolean;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, maxWidth = 'max-w-md' }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, maxWidth = 'max-w-md', showCloseButton = true }) => {
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
 
   useEffect(() => {
@@ -35,9 +36,11 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, maxWidt
       >
         <div className="p-6 flex justify-between items-center border-b border-border dark:border-dark-border">
           <h2 className="text-xl font-semibold text-text-primary dark:text-dark-text-primary">{title}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
-            <CloseIcon className="w-5 h-5"/>
-          </button>
+          {showCloseButton && (
+            <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
+                <CloseIcon className="w-5 h-5"/>
+            </button>
+          )}
         </div>
         <div className="p-6">
           {children}
