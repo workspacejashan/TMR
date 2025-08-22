@@ -38,18 +38,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, sendMessag
     scrollToBottom();
   }, [messages, isLoading]);
 
-  useEffect(() => {
-    // Re-focus the input after the bot has finished responding.
-    if (!isLoading) {
-      inputRef.current?.focus();
-    }
-  }, [isLoading]);
-
   const handleSend = () => {
     if (input.trim() && !isLoading) {
       sendMessage(input.trim());
       setInput('');
-      inputRef.current?.focus();
     }
   };
 

@@ -44,7 +44,7 @@ const PublicProfileModal: React.FC<PublicProfileModalProps> = ({ isOpen, onClose
     };
     
     const handleConnect = () => {
-        onClose(); // Close this modal first
+        // We don't close this modal first anymore, so recruiter can see profile while connecting.
         openConnectModal(candidateProfile);
     };
 
@@ -61,8 +61,9 @@ const PublicProfileModal: React.FC<PublicProfileModalProps> = ({ isOpen, onClose
             onClose={onClose} 
             title={isRecruiterView ? `Candidate Profile` : 'Your Public Profile'}
             maxWidth="max-w-4xl"
+            contentClassName="p-0 flex flex-col"
         >
-            <div className="max-h-[75vh] overflow-y-auto -mx-6 px-6">
+            <div className="overflow-y-auto p-6 flex-grow">
                 <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
                     {/* Left Sidebar */}
                     <aside className="w-full md:w-1/3 lg:w-1/4">
@@ -195,7 +196,7 @@ const PublicProfileModal: React.FC<PublicProfileModalProps> = ({ isOpen, onClose
                 </div>
             </div>
             {(isRecruiterView) && (
-                <div className="p-6 mt-4 border-t border-border dark:border-dark-border flex justify-end gap-3 -mb-6 -mx-6 rounded-b-2xl bg-slate-50 dark:bg-dark-surface/50">
+                <div className="p-6 border-t border-border dark:border-dark-border flex justify-end gap-3 flex-shrink-0 bg-slate-50/80 dark:bg-dark-surface/80 backdrop-blur-sm rounded-b-2xl">
                     <button
                         onClick={onClose}
                         className="bg-slate-100 dark:bg-dark-border hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-4 focus:ring-slate-500/30 transition-all duration-300"
